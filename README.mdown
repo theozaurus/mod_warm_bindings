@@ -6,17 +6,17 @@ This enables the complex BOSH handshake to be done behind the scenes and avoids 
 In practice a client can send a request for a warmed BOSH binding to a web service. The web service would then send a POST request to this ejabberd module to create the BOSH session - returning the JID, SID and RID. These details are handed back to the client and from here the client can communicate directly with the BOSH connection of ejabberd.
 
 The POST request is comprised of:
+
 - basic access authentication headers for a user specified as an admin on the acl
 - jid parameter - this can either be a bare of full JID
 - password parameter - the password for the above JID
 
-For example:
+For example with curl:
 
     $ curl --basic --user admin@ejabberd.local:changeme --data "jid=foo.bar@ejabberd.local/home&password=foo" ejabberd.local:5280/warm
     <?xml version='1.0'?>
     <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
     <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"><head><title>Success</title></head><body><p>Success</p><dl class="binding"><dt class="jid">JID</dt><dd class="jid">foo.bar@ejabberd.local/home</dd><dt class="sid">SID</dt><dd class="sid">8d72a9ff0479c55338a57dce8c27d52d2934cf0d</dd><dt class="rid">RID</dt><dd class="rid">1088817781</dd></dl></body></html>
-To try this out a simply
 
 Or to try it out in the browser visit: http://ejabberd.local:5280/warm
 
