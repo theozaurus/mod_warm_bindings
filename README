@@ -1,0 +1,55 @@
+# Purpose
+This is a simple module that provides a HTTP interface authenticated using basic access authentication for creating an authenticated BOSH session on behalf of other users.
+
+This enables the complex BOSH handshake to be done behind the scenes and avoids transmitting the password to the client (only the SID and RID are used).
+
+In practice a client can send a request for a warmed BOSH binding to a web service. The web service would then send a POST request to this ejabberd module to create the BOSH session - returning the JID, SID and RID. These details are handed back to the client and from here the client can communicate directly with the BOSH connection of ejabberd.
+
+The POST request is comprised of:
+- basic access authentication headers for a user specified as an admin on the acl
+- jid parameter - this can either be a bare of full JID
+- password parameter - the password for the above JID
+
+For example:
+
+    $ curl --basic --user admin@ejabberd.local:changeme --data "jid=foo.bar@ejabberd.local/home&password=foo" ejabberd.local:5280/warm
+    <?xml version='1.0'?>
+    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+    <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"><head><title>Success</title></head><body><p>Success</p><dl class="binding"><dt class="jid">JID</dt><dd class="jid">foo.bar@ejabberd.local/home</dd><dt class="sid">SID</dt><dd class="sid">8d72a9ff0479c55338a57dce8c27d52d2934cf0d</dd><dt class="rid">RID</dt><dd class="rid">1088817781</dd></dl></body></html>
+To try this out a simply
+
+Or to try it out in the browser visit: http://ejabberd.local:5280/warm
+
+# Limitations
+
+The password of the user you need to log in as must be known. This can be handled by having a an authentication module with some type of backdoor password - or generating the ejabberd password on behalf of the user and storing it in the webservice.
+
+# Installation
+Make sure that ejabberd is already installed. The build script assumes it lives at /lib/ejabberd
+
+    $ git clone git://github.com/theoooo/mod_warm_bindings.git
+    $ cd mod_warm_bindings
+    $ ./build.sh
+    $ sudo cp ebin/*.beam /lib/ejabberd/ebin
+
+In the ejabberd config (/etc/ejabberd/ejabberd.cfg) an admin user must be specified like:
+
+    {acl, admin, {user, "admin", "ejabberd.local"}}.
+
+Then the ejabberd_http module must be configured correctly:
+
+    {listen,[
+      ...
+      {5280, ejabberd_http, [
+        ...
+        http_bind,
+        {request_handlers, [
+          {["warm"], mod_warm_bindings}
+        ]},
+        ...
+      ]}
+      ...
+    ]}.
+
+
+ejabberd can then be restarted.
