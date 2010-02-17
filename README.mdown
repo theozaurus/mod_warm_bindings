@@ -22,7 +22,7 @@ Or to try it out in the browser visit: http://ejabberd.local:5280/warm
 
 # Limitations
 
-The password of the user you need to log in as must be known. This can be handled by having a an authentication module with some type of backdoor password - or generating the ejabberd password on behalf of the user and storing it in the webservice.
+The password of the user you wish to warm the binding for must be known. This can be handled by having a an authentication module with some type of backdoor password - or generating the ejabberd password on behalf of the user and storing it in the webservice.
 
 # Installation
 Make sure that ejabberd is already installed. The build script assumes it lives at /lib/ejabberd
