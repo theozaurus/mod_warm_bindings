@@ -23,10 +23,16 @@
 %%
 
 param_decode(Str) ->
-    lists:map(fun([K,V]) ->
+    lists:map(
+        fun(Pair) ->
             % Turn 2D array into list of tuples
-            % [["jid","foo@bar.com/hth"],["b","h"]] -> [{jid,"foo@bar.com/hth"},{b,"h"}]
-            list_to_tuple([list_to_atom(K),V])
+            % [["jid","foo@bar.com/hth"],["b","h"],["q"]] -> [{jid,"foo@bar.com/hth"},{b,"h"},{q, null}]
+            case Pair of
+            [K,V] ->
+                list_to_tuple([list_to_atom(K),V]);
+            [K] ->
+                list_to_tuple([list_to_atom(K),null])
+            end
         end,
         param_split(Str)
     ).
