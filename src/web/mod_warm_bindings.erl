@@ -29,21 +29,13 @@
 %%%----------------------------------------------------------------------
 
 process([], #request{auth = Auth, ip = IP, method = 'POST', data = Data}) ->
-    case auth_admin(Auth) of
-        success -> 
-            ?INFO_MSG("Params ~p",[Data]),
-            {value,{_,SJID}} = lists:keysearch(jid,      1, param_decode(Data)),
-            {value,{_,Pass}} = lists:keysearch(password, 1, param_decode(Data)),
-            case is_list(SJID) andalso is_list(Pass) of
-                true  ->
-                    case bind(SJID, Pass, IP) of
-                        false   -> badrequest();
-                        Binding -> success(Binding)
-                    end;
-                false -> badrequest()
-            end;
-        forbidden    -> forbidden();
-        unauthorized -> unauthorized()
+    try warm(Auth,IP,Data)
+    catch
+        T:X -> ?ERROR_MSG("Exception while warming binding~n"
+                          "** Tag: ~p~n"
+                          "** Error: ~p~n"
+                          "** Stacktrace: ~p~n",
+                          [T,X,erlang:get_stacktrace()])
     end;
 process([], #request{auth = Auth, method = 'GET', path = FullPath}) ->
     case auth_admin(Auth) of
@@ -58,6 +50,25 @@ process(Path, Request) ->
 %%%----------------------------------------------------------------------
 %%% LOGIN HELPERS
 %%%----------------------------------------------------------------------
+
+warm(Auth,IP,Data) ->
+    case auth_admin(Auth) of
+        success -> 
+            ?INFO_MSG("Params ~p",[Data]),
+            DecodedData = param_decode(Data),
+            {value,{_,SJID}} = lists:keysearch(jid,      1, DecodedData),
+            {value,{_,Pass}} = lists:keysearch(password, 1, DecodedData),
+            case is_list(SJID) andalso is_list(Pass) of
+                true  ->
+                    case bind(SJID, Pass, IP) of
+                        false   -> badrequest();
+                        Binding -> success(Binding)
+                    end;
+                false -> badrequest()
+            end;
+        forbidden    -> forbidden();
+        unauthorized -> unauthorized()
+    end.
 
 %%% Checks that a user is an admin
 auth_admin(Auth) ->
