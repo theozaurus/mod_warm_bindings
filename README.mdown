@@ -11,6 +11,13 @@ The POST request is comprised of:
 - jid parameter - this can either be a bare of full JID
 - password parameter - the password for the above JID
 
+and optional parts:
+
+- language - This attribute specifies the default language of any human-readable XML character data sent or received during the session.
+- wait -  This attribute specifies the longest time (in seconds) that the connection manager is allowed to wait before responding to any request during the session. This enables the client to limit the delay before it discovers any network failure, and to prevent its HTTP/TCP connection from expiring due to inactivity.
+- hold - This attribute specifies the maximum number of requests the connection manager is allowed to keep waiting at any one time during the session. If the client is not able to use HTTP Pipelining then this SHOULD be set to "1".
+- ver - This attribute specifies the highest version of the BOSH protocol that the client supports. The numbering scheme is "<major>.<minor>" (where the minor number MAY be incremented higher than a single digit, so it MUST be treated as a separate integer). Note: The 'ver' attribute should not be confused with the version of any protocol being transported.
+
 For example with curl:
 
     $ curl --basic --user admin@ejabberd.local:changeme --data "jid=foo.bar@ejabberd.local/home&password=foo" ejabberd.local:5280/warm
@@ -19,6 +26,12 @@ For example with curl:
     <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"><head><title>Success</title></head><body><p>Success</p><dl class="binding"><dt class="jid">JID</dt><dd class="jid">foo.bar@ejabberd.local/home</dd><dt class="sid">SID</dt><dd class="sid">8d72a9ff0479c55338a57dce8c27d52d2934cf0d</dd><dt class="rid">RID</dt><dd class="rid">1088817781</dd></dl></body></html>
 
 Or to try it out in the browser visit: http://ejabberd.local:5280/warm
+
+# Supports
+
+ejabberd 2.1.0 - 2.1.2
+
+Breaking changes in 2.1.3 mean any subsequent releases are incompatible
 
 # Limitations
 
