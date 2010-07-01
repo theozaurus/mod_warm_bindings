@@ -22,6 +22,14 @@
 -include("jlib.hrl").
 -include("ejabberd_http.hrl").
 
+-define(LANG,         "en").
+-define(WAIT,         "60").
+-define(HOLD,         "1").
+-define(WINDOW,       "5").
+-define(CONTENT,      "text/xml; charset=utf-8").
+-define(VER,          "1.6").
+-define(XMPP_VERSION, "1.0").
+
 -record(binding, {jid, sid, rid}).
 
 %%%----------------------------------------------------------------------
@@ -60,7 +68,7 @@ warm(Auth,IP,Data) ->
             {value,{_,Pass}} = lists:keysearch(password, 1, DecodedData),
             case is_list(SJID) andalso is_list(Pass) of
                 true  ->
-                    case bind(SJID, Pass, IP) of
+                    case bind(SJID, Pass, IP, DecodedData) of
                         false   -> badrequest();
                         Binding -> success(Binding)
                     end;
@@ -102,8 +110,17 @@ auth_admin(Auth) ->
             unauthorized
     end.
     
-bind(SJID, Password, IP) ->
+bind(SJID, Password, IP, Data) ->
     #jid{user = User, server = Server, resource = Resource} = jlib:string_to_jid(SJID),
+    
+    Lang        = default_value( lang,         Data, ?LANG         ),
+    Wait        = default_value( wait,         Data, ?WAIT         ),
+    Hold        = default_value( hold,         Data, ?HOLD         ),
+    Window      = default_value( window,       Data, ?WINDOW       ),
+    Content     = default_value( content,      Data, ?CONTENT      ),
+    Ver         = default_value( ver,          Data, ?VER          ),
+    XMPPVersion = default_value( xmpp_version, Data, ?XMPP_VERSION ),
+    
     RidSessionCreate  = list_to_integer(randoms:get_string()),
     RidAuth           = RidSessionCreate  + 1,
     RidSessionRestart = RidAuth           + 1,
@@ -111,7 +128,7 @@ bind(SJID, Password, IP) ->
     RidSessionRequest = RidResourceBind   + 1,
     RidNext           = RidSessionRequest + 1,
     
-    {xmlelement, "body", Attrs1, _ } = process_request("<body rid='"++integer_to_list(RidSessionCreate)++"' xmlns='http://jabber.org/protocol/httpbind' to='"++Server++"' xml:lang='en' wait='60' hold='1' window='5' content='text/xml; charset=utf-8' ver='1.6' xmpp:version='1.0' xmlns:xmpp='urn:xmpp:xbosh'/>", IP),
+    {xmlelement, "body", Attrs1, _ } = process_request("<body rid='"++integer_to_list(RidSessionCreate)++"' xmlns='http://jabber.org/protocol/httpbind' to='"++Server++"' xml:lang='"++Lang++"' wait='"++Wait++"' hold='"++Hold++"' window='"++Window++"' content='"++Content++"' ver='"++Ver++"' xmpp:version='"++XMPPVersion++"' xmlns:xmpp='urn:xmpp:xbosh'/>", IP),
     {value, {_, Sid}}    = lists:keysearch("sid",    1, Attrs1),
     {value, {_, AuthID}} = lists:keysearch("authid", 1, Attrs1),
     Auth = base64:encode_to_string(AuthID++[0]++User++[0]++Password),
@@ -129,6 +146,17 @@ bind(SJID, Password, IP) ->
         _ ->
             ?DEBUG("User binding credentials wrong", []),
             false
+    end.
+    
+default_value(Name, Data, Default) ->
+    case lists:keysearch(Name, 1, Data) of
+        {value, {_, Possible}} ->
+            case is_list(Possible) of
+                true -> Possible;
+                _    -> Default
+            end;
+        _ ->
+            Default
     end.
     
 process_request(Request, IP) ->
@@ -149,7 +177,7 @@ form(Path) ->
             {xmlelement, "body", [], [
                 {xmlelement, "form", [{"action","/"++filename:join(Path)},{"method","post"}], [
                     {xmlelement, "fieldset",[],[
-                        {xmlelement, "legend",[],[{xmlcdata, "Warm Binding"}]},
+                        {xmlelement, "legend",[],[{xmlcdata, "Credentials"}]},
                         {xmlelement, "ol",[],[
                             {xmlelement, "li",[],[
                                 {xmlelement, "label", [{"for","jid"}], [{xmlcdata, "JID"}]},
@@ -158,6 +186,39 @@ form(Path) ->
                             {xmlelement, "li",[],[
                                 {xmlelement, "label", [{"for", "password"}], [{xmlcdata, "Password"}]},
                                 {xmlelement, "input", [{"type","password"},{"name","password"}], []}
+                            ]}
+                        ]}
+                    ]},
+                    {xmlelement, "fieldset",[],[
+                        {xmlelement, "legend",[],[{xmlcdata, "Connection Options"}]},
+                        {xmlelement, "ol",[],[
+                            {xmlelement, "li",[],[
+                                {xmlelement, "label", [{"for","lang"}], [{xmlcdata, "Language"}]},
+                                {xmlelement, "input", [{"type","text"},{"name","lang"},{"value",?LANG}], []}
+                            ]},
+                            {xmlelement, "li",[],[
+                                {xmlelement, "label", [{"for","wait"}], [{xmlcdata, "Wait"}]},
+                                {xmlelement, "input", [{"type","text"},{"name","wait"},{"value",?WAIT}], []}
+                            ]},
+                            {xmlelement, "li",[],[
+                                {xmlelement, "label", [{"for","hold"}], [{xmlcdata, "Hold"}]},
+                                {xmlelement, "input", [{"type","text"},{"name","hold"},{"value",?HOLD}], []}
+                            ]},
+                            {xmlelement, "li",[],[
+                                {xmlelement, "label", [{"for","window"}], [{xmlcdata, "Window"}]},
+                                {xmlelement, "input", [{"type","text"},{"name","window"},{"value",?WINDOW}], []}
+                            ]},
+                            {xmlelement, "li",[],[
+                                {xmlelement, "label", [{"for","content"}], [{xmlcdata, "Content"}]},
+                                {xmlelement, "input", [{"type","text"},{"name","content"},{"value",?CONTENT}], []}
+                            ]},
+                            {xmlelement, "li",[],[
+                                {xmlelement, "label", [{"for","ver"}], [{xmlcdata, "BOSH Version"}]},
+                                {xmlelement, "input", [{"type","text"},{"name","ver"},{"value",?VER}], []}
+                            ]},
+                            {xmlelement, "li",[],[
+                                {xmlelement, "label", [{"for","xmpp_version"}], [{xmlcdata, "XMPP Version"}]},
+                                {xmlelement, "input", [{"type","text"},{"name","xmpp_version"},{"value",?XMPP_VERSION}], []}
                             ]}
                         ]}
                     ]},
