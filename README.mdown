@@ -65,3 +65,8 @@ Then the ejabberd_http module must be configured correctly:
 
 
 ejabberd can then be restarted.
+
+# Contributors
+
+ - [theozaurus](https://github.com/theozaurus/)
+ - [myers](https://github.com/myers)
