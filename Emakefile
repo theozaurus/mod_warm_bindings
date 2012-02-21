@@ -1,2 +1,2 @@
-{'src/web/mod_warm_bindings', [{outdir, "ebin"},{i,"/lib/ejabberd/include"},{i,"/lib/ejabberd/include/web"}]}.
-{'src/web/web_utils',         [{outdir, "ebin"},{i,"/lib/ejabberd/include"},{i,"/lib/ejabberd/include/web"}]}.
+{'src/web/mod_warm_bindings', [{outdir, "ebin"},{i,"/usr/lib/ejabberd/include"},{i,"/usr/lib/ejabberd/include/web"}]}.
+{'src/web/web_utils',         [{outdir, "ebin"},{i,"/usr/lib/ejabberd/include"},{i,"/usr/lib/ejabberd/include/web"}]}.
