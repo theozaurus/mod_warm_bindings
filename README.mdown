@@ -29,9 +29,7 @@ Or to try it out in the browser visit: http://ejabberd.local:5280/warm
 
 # Supports
 
-ejabberd 2.1.0 - 2.1.2
-
-Breaking changes in 2.1.3 mean any subsequent releases are incompatible
+ejabberd 2.1.0 - 2.1.x
 
 # Limitations
 

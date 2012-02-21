@@ -155,7 +155,15 @@ default_value(Name, Data, Default) ->
     
 process_request(Request, IP) ->
     {_, _, Response} = ejabberd_http_bind:process_request(Request, IP),
-    xml_stream:parse_element(lists:flatten(Response)).
+    R = case is_list(Response) of
+        %%% ejabberd 2.1.0 - 2.1.2
+        true ->
+            lists:flatten(Response);
+        %%% ejabberd 2.1.3 - 2.1.x
+        _    -> 
+            Response
+    end,
+    xml_stream:parse_element(R).
     
 %%%----------------------------------------------------------------------
 %%% VIEWS
