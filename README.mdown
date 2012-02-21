@@ -40,7 +40,7 @@ The password of the user you wish to warm the binding for must be known. This ca
 # Installation
 Make sure that ejabberd is already installed. The build script assumes it lives at /lib/ejabberd
 
-    $ git clone git://github.com/theoooo/mod_warm_bindings.git
+    $ git clone git://github.com/theozaurus/mod_warm_bindings.git
     $ cd mod_warm_bindings
     $ ./build.sh
     $ sudo cp ebin/*.beam /lib/ejabberd/ebin
